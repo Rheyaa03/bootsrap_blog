@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victoria Falls - Zimbabwe</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .blog-post-thumbnail {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+        .blog-content {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Destinations</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="About.html">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="contact.html">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Blog Post Content -->
+    <div class="container blog-content">
+        <h1>Victoria Falls, Zimbabwe</h1>
+        <img src="images/Scenic View at Victoria Falls (1).jpg" alt="Victoria Falls" class="post thumbnail"
+        width="250" height="200">
+        <img src="images/The Boma experience in Victoria Falls, Zimbabwe.jpg" alt="Victoria Falls" class="post thumbnail"
+        width="250" height="200">
+        <img src="images/Zimbabwe Flag, Flags of Various Countries, Republic of Zimbabwe Polyester, Indoor Outdoor 90X150cm - 90x150 cm.jpg"
+        width="250" height="200">
+        <p class="post thumbnail">Victoria Falls is one of the largest and most famous waterfalls in the world, located on the Zambezi River on the border between Zimbabwe and Zambia.</p>
+
+        <h3>Attractions:</h3>
+        <ul>
+            <li><strong>The Falls:</strong> A breathtaking sight, especially during the rainy season when the falls are in full flow.</li>
+            <li><strong>Victoria Falls Bridge:</strong> A historic bridge spanning the Zambezi River, offering spectacular views of the falls.</li>
+            <li><strong>Devil’s Pool:</strong> A natural infinity pool located at the edge of the falls, offering an exhilarating experience for the brave-hearted.</li>
+        </ul>
+
+        <h3>Best Time to Visit:</h3>
+        <p>The best time to visit Victoria Falls is from February to May when the falls are at their peak flow, but the views are stunning year-round.</p>
+
+        <h3>Things to Do:</h3>
+        <p>Experience a helicopter flight over the falls, go white-water rafting on the Zambezi River, or take a sunset cruise along the river for a relaxing experience.</p>
+    </div>
+    <?php
+// Database connection
+$host = 'localhost';  
+$dbname = 'blog_comments';  
+$username = 'root';  
+$password = 'Reabetsweneo03#'; 
+
+$conn = new mysqli($host, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Get the post ID from the URL
+$post_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+// Fetch the post content
+$sql = "SELECT * FROM posts WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $post_id);
+$stmt->execute();
+$post_result = $stmt->get_result();
+$post = $post_result->fetch_assoc();
+
+// Fetch comments for this post
+$sql_comments = "SELECT * FROM comments WHERE post_id = ? ORDER BY created_at DESC";
+$stmt_comments = $conn->prepare($sql_comments);
+$stmt_comments->bind_param("i", $post_id);
+$stmt_comments->execute();
+$comments_result = $stmt_comments->get_result();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($post['title']); ?> - Rhea Travels</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Destinations</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="About.html">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="contact.html">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Blog Post -->
+    <div class="container my-5">
+        <h1><?php echo htmlspecialchars($post['title']); ?></h1>
+        <p><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
+
+        <!-- Comment Form -->
+        <h3>Leave a Comment:</h3>
+        <form method="POST" action="submit_comment.php?post_id=<?php echo $post_id; ?>">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="comment">Your Comment</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <!-- Display Comments -->
+        <h3>Comments:</h3>
+        <?php if ($comments_result->num_rows > 0): ?>
+            <?php while ($comment = $comments_result->fetch_assoc()): ?>
+                <div class="media my-4">
+                    <div class="media-body">
+                        <h5 class="mt-0"><?php echo htmlspecialchars($comment['name']); ?></h5>
+                        <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                        <small>Posted on: <?php echo $comment['created_at']; ?></small>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p>No comments yet.</p>
+        <?php endif; ?>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Rhea Travels. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+
+    <!-- Footer -->
+    <footer class="footer bg-light text-center py-3">
+        <p>&copy; 2024 My Blog. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
